@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Energy Consumption Prediction</title>
+    <style>
+      /* General body styling */
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #000; /* Black background */
+        color: #fff; /* White text for readability */
+        margin: 0;
+      }
+
+      /* Container for the form and result */
+      .prediction-container {
+        background: #333; /* Dark grey background for the form */
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        max-width: 400px;
+        width: 100%;
+        color: #fff; /* White text inside the container */
+      }
+
+      /* Title styling */
+      .prediction-title {
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 24px;
+        color: #fff;
+      }
+
+      /* Form group styling for each input/select field */
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      /* Label styling */
+      .form-label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #fff;
+      }
+
+      /* Input and select styling */
+      .form-input,
+      .form-select {
+        width: 100%;
+        padding: 10px;
+        font-size: 14px;
+        border: 1px solid #555;
+        border-radius: 4px;
+        box-sizing: border-box;
+        background-color: #555; /* Dark grey background for inputs */
+        color: #fff; /* White text for inputs */
+      }
+
+      /* Tooltip styling for additional information */
+      .tooltip-text {
+        font-size: 12px;
+        color: #ccc; /* Light grey tooltip text */
+      }
+
+      /* Button styling */
+      .prediction-button {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        margin-top: 20px;
+        border-radius: 4px;
+        background-color: rgb(161, 0, 255); /* Purple color */
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+
+      /* Button hover effect */
+      .prediction-button:hover {
+        background-color: rgb(140, 0, 224); /* Darker purple for hover */
+      }
+
+      /* Prediction result styling */
+      #predictionResult {
+        margin-top: 20px;
+        font-size: 18px;
+        text-align: center;
+        color: #fff; /* White text for the result */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="prediction-container">
+      <h1 class="prediction-title">Energy Consumption Prediction</h1>
+      <form id="energyPredictionForm">
+        <div class="form-group">
+          <label for="inputHouseholdSize" class="form-label"
+            >Household Size:</label
+          >
+          <input
+            type="number"
+            id="inputHouseholdSize"
+            name="household_size"
+            class="form-input"
+            min="1"
+            placeholder="e.g., 3"
+            required
+          />
+          <div class="tooltip-text">
+            Enter the number of people in your household.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="selectHomeType" class="form-label">Home Type:</label>
+          <select
+            id="selectHomeType"
+            name="home_type"
+            class="form-select"
+            required
+          >
+            <option value="" disabled selected>Select your home type</option>
+            <option value="house">House</option>
+            <option value="apartment">Apartment</option>
+          </select>
+          <div class="tooltip-text">
+            Select whether you live in a house or an apartment.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="selectApplianceUsage" class="form-label"
+            >Appliance Usage:</label
+          >
+          <select
+            id="selectApplianceUsage"
+            name="appliance_usage"
+            class="form-select"
+            required
+          >
+            <option value="" disabled selected>
+              Typical appliance usage level
+            </option>
+            <option value="low">Low (few appliances)</option>
+            <option value="medium">Medium (average usage)</option>
+            <option value="high">High (many appliances)</option>
+          </select>
+          <div class="tooltip-text">
+            Select your estimated appliance usage level.
+          </div>
+        </div>
+
+        <button type="button" id="btnGetPrediction" class="prediction-button">
+          Get Prediction
+        </button>
+      </form>
+      <div id="predictionResult"></div>
+    </div>
+
+    <script>
+      document
+        .getElementById("btnGetPrediction")
+        .addEventListener("click", function () {
+          const resultDiv = document.getElementById("predictionResult");
+
+          // Get form data
+          const householdSize =
+            document.getElementById("inputHouseholdSize").value;
+          const homeType = document.getElementById("selectHomeType").value;
+          const applianceUsage = document.getElementById(
+            "selectApplianceUsage"
+          ).value;
+
+          // Send form data to /predict
+          fetch("/predict", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              household_size: householdSize,
+              home_type: homeType,
+              appliance_usage: applianceUsage,
+            }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              resultDiv.innerHTML = `<p>Predicted Energy Consumption for Next Hour: ${data.predicted_value.toFixed(
+                2
+              )} MW</p>`;
+            })
+            .catch((error) => {
+              resultDiv.innerHTML = `<p style="color: red;">An error occurred: ${error.message}</p>`;
+            });
+        });
+    </script>
+  </body>
+</html>
